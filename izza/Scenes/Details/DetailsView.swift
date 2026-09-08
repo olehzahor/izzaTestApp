@@ -12,14 +12,21 @@ struct DetailsView: View {
     @State private var selectedSize = "M"
     @State private var quantity = 1
     @State private var isFavorite = false
+    @State private var isPizzaZoomed = false
 
-    private let pizzaColors: [Color] = [.green, .orange, .red, .yellow]
+    private let pizzaImages = [
+        Image(.pizzaClassic),
+        Image(.pizzaPink),
+        Image(.pizzaGreen)
+    ]
     private let sizes = ["S", "M", "L"]
     
     private let designScreenWidth = 375.0
     private let designEllipseDiameter = 607.0
     
     private let buttonSize = 48.0
+
+    @State private var isPizzaExpanded = false
 
     private func sizePicker() -> some View {
         HStack(alignment: .bottom, spacing: 26) {
@@ -54,10 +61,21 @@ struct DetailsView: View {
             )
             
             PizzaCarousel(
-                colors: pizzaColors,
+                images: pizzaImages,
                 selection: $selectedPizza,
                 size: .fromString(selectedSize)
             )
+            .matchedGeometryEffect(id: "selectedPizza", in: pizzaNamespace)
+            .overlay {
+                Image(.zoom)
+                    .foregroundStyle(.white)
+                    .onTapGesture {
+                        guard !isPizzaZoomed else { return }
+                        withAnimation(.bouncy(duration: 0.35)) {
+                            isPizzaZoomed.toggle()
+                        }
+                    }
+            }
             .padding(.top, 54)
             .padding(.bottom, 41)
             
@@ -112,7 +130,8 @@ struct DetailsView: View {
         .padding(.vertical, 12)
         .frame(height: 48)
     }
-    
+    @Namespace private var pizzaNamespace
+
     // MARK: - Body
     var body: some View {
         VStack(spacing: 0) {
@@ -124,6 +143,14 @@ struct DetailsView: View {
         }
         .padding(.bottom, 22)
         .background(Color.white)
+        .scaleEffect(isPizzaZoomed ? 4.0 : 1)
+        .onTapGesture {
+            guard isPizzaZoomed else { return }
+
+            withAnimation(.bouncy(duration: 0.35)) {
+                isPizzaZoomed.toggle()
+            }
+        }
     }
 }
 

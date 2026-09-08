@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PizzaCarousel: View {
-    let colors: [Color]
+    let images: [Image]
     @Binding var selection: Int?
     
     var size: Size
@@ -30,34 +30,34 @@ struct PizzaCarousel: View {
             
             ScrollView(.horizontal) {
                 LazyHStack(spacing: itemSpacing) {
-                    ForEach(colors.indices, id: \.self) { index in
-                        PizzaCarouselItem(
-                            color: colors[index],
-                            diameter: itemDiameter
-                        )
-                        .frame(width: itemDiameter)
-                        .visualEffect { content, geometry in
-                            let distanceFromCenter = abs(
-                                geometry.frame(in: .named("pizzaCarousel")).midX
-                                - proxy.size.width / 2
-                            )
-                            let progress = min(
-                                distanceFromCenter / (proxy.size.width / 2),
-                                1
-                            )
-                            
-                            return content
-                                .scaleEffect(
-                                    selectedScale
-                                    - progress * (selectedScale - minimumScale)
+                    ForEach(images.indices, id: \.self) { index in
+                        images[index]
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: itemDiameter, height: itemDiameter)
+                            .frame(width: itemDiameter)
+                            .visualEffect { content, geometry in
+                                let distanceFromCenter = abs(
+                                    geometry.frame(in: .named("pizzaCarousel")).midX
+                                    - proxy.size.width / 2
                                 )
-                        }
-                        .onTapGesture {
-                            withAnimation(.bouncy(duration: 0.25)) {
-                                selection = index
+                                let progress = min(
+                                    distanceFromCenter / (proxy.size.width / 2),
+                                    1
+                                )
+
+                                return content
+                                    .scaleEffect(
+                                        selectedScale
+                                        - progress * (selectedScale - minimumScale)
+                                    )
                             }
-                        }
-                        .id(index)
+                            .onTapGesture {
+                                withAnimation(.bouncy(duration: 0.25)) {
+                                    selection = index
+                                }
+                            }
+                            .id(index)
                     }
                 }
                 .scrollTargetLayout()
@@ -114,7 +114,11 @@ private struct PizzaCarouselPreview: View {
             }
             
             PizzaCarousel(
-                colors: [.green, .orange, .red],
+                images: [
+                    Image(.pizzaClassic),
+                    Image(.pizzaPink),
+                    Image(.pizzaGreen)
+                ],
                 selection: $selection,
                 size: selectedSize
             )
