@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  DetailsView.swift
 //  izza
 //
 //  Created by Oleh on 08.09.2026.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct DetailsView: View {
     var body: some View {
         VStack {
             Image(systemName: "globe")
@@ -20,5 +20,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    DetailsView()
 }
