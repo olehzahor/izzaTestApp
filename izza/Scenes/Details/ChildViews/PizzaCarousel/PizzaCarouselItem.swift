@@ -36,10 +36,6 @@ struct PizzaCarouselItem: View {
                 .font(.system(size: 34 * scale, weight: .bold))
                 .foregroundStyle(.green)
                 .offset(x: 46 * scale, y: -50 * scale)
-
-            Circle()
-                .stroke(.white, lineWidth: 2 * scale)
-                .frame(width: 26 * scale, height: 26 * scale)
         }
         .frame(width: diameter, height: diameter)
         .shadow(
