@@ -16,7 +16,7 @@ struct PizzaCarousel: View {
     private let designScreenWidth = 375.0
     private let designCarouselItemSize = Size.medium.rawValue
     private let designSmallPizzaSize = 80.0
-
+    
     var body: some View {
         GeometryReader { proxy in
             // Some math to adjust designed geometry to any screen width
@@ -27,7 +27,7 @@ struct PizzaCarousel: View {
             let selectedScale = selectedDiameter / itemDiameter
             let minimumScale = smallDiameter / itemDiameter
             let itemSpacing = proxy.size.width / 2 - itemDiameter
-
+            
             ScrollView(.horizontal) {
                 LazyHStack(spacing: itemSpacing) {
                     ForEach(colors.indices, id: \.self) { index in
@@ -35,23 +35,28 @@ struct PizzaCarousel: View {
                             color: colors[index],
                             diameter: itemDiameter
                         )
-                            .frame(width: itemDiameter)
-                            .visualEffect { content, geometry in
-                                let distanceFromCenter = abs(
-                                    geometry.frame(in: .named("pizzaCarousel")).midX
-                                        - proxy.size.width / 2
+                        .frame(width: itemDiameter)
+                        .visualEffect { content, geometry in
+                            let distanceFromCenter = abs(
+                                geometry.frame(in: .named("pizzaCarousel")).midX
+                                - proxy.size.width / 2
+                            )
+                            let progress = min(
+                                distanceFromCenter / (proxy.size.width / 2),
+                                1
+                            )
+                            
+                            return content
+                                .scaleEffect(
+                                    selectedScale
+                                    - progress * (selectedScale - minimumScale)
                                 )
-                                let progress = min(
-                                    distanceFromCenter / (proxy.size.width / 2),
-                                    1
-                                )
-
-                                return content
-                                    .scaleEffect(
-                                        selectedScale
-                                            - progress * (selectedScale - minimumScale)
-                                    )
+                        }
+                        .onTapGesture {
+                            withAnimation(.bouncy(duration: 0.25)) {
+                                selection = index
                             }
+                        }
                         .id(index)
                     }
                 }
@@ -95,9 +100,9 @@ extension PizzaCarousel {
 }
 
 private struct PizzaCarouselPreview: View {
-    @State private var selection: Int? = 1
+    @State private var selection: Int? = 0
     @State private var selectedSize: PizzaCarousel.Size = .medium
-
+    
     var body: some View {
         VStack {
             HStack {
@@ -107,7 +112,7 @@ private struct PizzaCarouselPreview: View {
                     }
                 }
             }
-
+            
             PizzaCarousel(
                 colors: [.green, .orange, .red],
                 selection: $selection,

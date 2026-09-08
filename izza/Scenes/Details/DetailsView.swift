@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DetailsView: View {
-    @State private var selectedPizza: Int? = 1
+    @State private var selectedPizza: Int? = 0
     @State private var selectedSize = "M"
     @State private var quantity = 1
     @State private var isFavorite = false
@@ -59,13 +59,16 @@ struct DetailsView: View {
 
             Spacer()
 
-            VStack(spacing: 4) {
+            VStack(spacing: 0) {
                 Text("Pizzas")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .font(.figtree(size: 10, weight: .regular))
+                    .foregroundStyle(.text)
+                    .lineLimit(1)
 
                 Text("Pepperoni Blast")
-                    .font(.title2.weight(.bold))
+                    .font(.figtree(size: 24, weight: .semibold))
+                    .foregroundStyle(.active)
+                    .lineLimit(1)
             }
 
             Spacer()
@@ -85,7 +88,7 @@ struct DetailsView: View {
             ForEach(sizes, id: \.self) { size in
                 VStack(spacing: -15) {
                     if size == "M" {
-                        scaleHint()
+                        Image(.banana)
                     }
 
                     sizeButton(
@@ -107,7 +110,7 @@ struct DetailsView: View {
     ) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.headline)
+                .font(.figtree(size: 18, weight: .semibold))
                 .foregroundStyle(isSelected ? .white : .primary)
                 .frame(width: buttonSize, height: buttonSize)
                 .background(isSelected ? Color.black : Color.white)
@@ -115,66 +118,69 @@ struct DetailsView: View {
                 .overlay {
                     if isSelected {
                         Circle()
-                            .strokeBorder(.white, lineWidth: 2)
+                            .stroke(.white, lineWidth: 2)
+                            .frame(
+                                width: buttonSize + 2,
+                                height: buttonSize + 2
+                            )
                     }
                 }
                 .shadow(color: .black.opacity(0.12), radius: 5, y: 3)
         }
     }
 
-    private func scaleHint() -> some View {
-        Image(.banana)
-    }
-
     private func descriptionSection() -> some View {
         Text("The combination of perfectly melted mozzarella cheese, tangy tomato sauce, and a crispy yet chewy crust creates a harmonious balance that leaves you wanting more.")
-            .font(.body)
+            .font(.figtree(size: 14))
             .lineSpacing(8)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 40)
-            .padding(.top, 36)
     }
 
-    private func orderBar() -> some View {
-        HStack(spacing: 14) {
-            HStack(spacing: 18) {
-                Button {
-                    quantity = max(1, quantity - 1)
-                } label: {
-                    Image(systemName: "minus")
-                        .frame(width: 44, height: 44)
-                }
-
-                Text("\(quantity)")
-                    .font(.title3.bold())
-                    .frame(minWidth: 20)
-
-                Button {
-                    quantity += 1
-                } label: {
-                    Image(systemName: "plus")
-                        .frame(width: 44, height: 44)
-                }
+    private func counter() -> some View {
+        return HStack(spacing: 8) {
+            roundButton(systemName: "minus") {
+                quantity = max(1, quantity - 1)
             }
-            .foregroundStyle(.primary)
-            .background(.white)
-            .clipShape(Capsule())
-            .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
+                        
+            Text("\(quantity)")
+                .font(.figtree(size: 24, weight: .extraBold))
+                .fixedSize(horizontal: true, vertical: false)
+                .frame(minWidth: 32)
+                .background(.highlight)
+
+            roundButton(systemName: "plus") {
+                quantity += 1
+            }
+        }
+        .foregroundStyle(.primary)
+        .background(.highlight)
+        .clipShape(Capsule())
+        .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
+    }
+    
+    private func orderBar() -> some View {
+        HStack {
+            counter()
+            
+            Spacer()
 
             Text("$17.99")
-                .font(.title3.bold())
+                .font(.figtree(size: 24, weight: .extraBold))
+            
+            Spacer()
 
             Button("Add") {}
-                .font(.title3.bold())
+                .font(.figtree(size: 24, weight: .extraBold))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 22)
-                .frame(height: 52)
-                .background(.cyan)
+                .frame(height: 48)
+                .background(.accent)
                 .clipShape(Capsule())
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 12)
-        .background(.white)
+        .frame(height: 48)
     }
 
     private func roundButton(
@@ -198,12 +204,12 @@ struct DetailsView: View {
         VStack(spacing: 0) {
             heroSection()
             descriptionSection()
+                .padding(.top, 21)
             Spacer(minLength: 16)
-        }
-        .background(Color.white)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
             orderBar()
         }
+        .padding(.bottom, 22)
+        .background(Color.white)
     }
 }
 
