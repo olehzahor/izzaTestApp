@@ -32,6 +32,7 @@ struct MainContainer: View {
             
             DetailsView()
         }
+        .preferredColorScheme(.light)
         .task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(3))
