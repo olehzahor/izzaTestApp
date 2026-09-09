@@ -13,7 +13,7 @@ struct DetailsView: View {
     @State private var quantity = 1
     @State private var isFavorite = false
     @State private var isPizzaZoomed = false
-
+    
     private let pizzaImages = [
         Image(.pizzaClassic),
         Image(.pizzaPink),
@@ -65,12 +65,11 @@ struct DetailsView: View {
                 selection: $selectedPizza,
                 size: .fromString(selectedSize)
             )
-            .matchedGeometryEffect(id: "selectedPizza", in: pizzaNamespace)
             .overlay {
                 Image(.zoom)
+                    .opacity(isPizzaZoomed ? 0.01 : 1)
                     .foregroundStyle(.white)
                     .onTapGesture {
-                        guard !isPizzaZoomed else { return }
                         withAnimation(.bouncy(duration: 0.35)) {
                             isPizzaZoomed.toggle()
                         }
@@ -85,7 +84,7 @@ struct DetailsView: View {
             GeometryReader { proxy in
                 let widthScale = proxy.size.width / designScreenWidth
                 let diameter = designEllipseDiameter * widthScale
-                
+                                
                 Ellipse()
                     .fill(Color.highlight)
                     .frame(width: diameter, height: diameter)
@@ -130,7 +129,6 @@ struct DetailsView: View {
         .padding(.vertical, 12)
         .frame(height: 48)
     }
-    @Namespace private var pizzaNamespace
 
     // MARK: - Body
     var body: some View {
@@ -143,14 +141,7 @@ struct DetailsView: View {
         }
         .padding(.bottom, 22)
         .background(Color.white)
-        .scaleEffect(isPizzaZoomed ? 4.0 : 1)
-        .onTapGesture {
-            guard isPizzaZoomed else { return }
-
-            withAnimation(.bouncy(duration: 0.35)) {
-                isPizzaZoomed.toggle()
-            }
-        }
+        .scaleEffect(isPizzaZoomed ? 4.0 : 1, anchor: .init(x: 0.5, y: 0.25))
     }
 }
 

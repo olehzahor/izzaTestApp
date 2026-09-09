@@ -46,7 +46,9 @@ struct MainContainer: View {
 struct izzaApp: App {
     var body: some Scene {
         WindowGroup {
-            MainContainer()
+            DetailsView()
+                .preferredColorScheme(.light)
+            //MainContainer()
         }
     }
 }
