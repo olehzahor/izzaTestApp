@@ -32,6 +32,7 @@ struct NavigationHeader: View {
                     .font(.figtree(size: 24, weight: .semibold))
                     .foregroundStyle(.active)
                     .lineLimit(1)
+                    .contentTransition(.interpolate)
             }
             .appear(from: .top)
 

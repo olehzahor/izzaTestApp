@@ -47,7 +47,7 @@ struct SplashView: View {
     ///   - onStopped: Called after `onCycleCompleted` requests the animation to stop.
     ///     Use this callback to remove the splash view with a transition.
     init(frames: [String] = (1...8).map { "splash\($0)" },
-         frameDuration: Duration = .milliseconds(40),
+         frameDuration: Duration = .milliseconds(60),
          onCycleCompleted: @escaping () -> Bool = { false },
          onStopped: @escaping () -> Void = {}) {
         self.frames = frames

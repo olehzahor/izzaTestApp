@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PizzaCarousel: View {
-    let images: [Image]
+    let images: [ImageSource]
     @Binding var selection: Int?
     
     var size: Size
@@ -31,9 +31,7 @@ struct PizzaCarousel: View {
             ScrollView(.horizontal) {
                 LazyHStack(spacing: itemSpacing) {
                     ForEach(images.indices, id: \.self) { index in
-                        images[index]
-                            .resizable()
-                            .scaledToFit()
+                        imageView(for: images[index])
                             .frame(width: itemDiameter, height: itemDiameter)
                             .frame(width: itemDiameter)
                             .visualEffect { content, geometry in
@@ -53,9 +51,7 @@ struct PizzaCarousel: View {
                                     )
                             }
                             .onTapGesture {
-                                withAnimation(.bouncy(duration: 0.25)) {
-                                    selection = index
-                                }
+                                selection = index
                             }
                             .id(index)
                     }
@@ -70,6 +66,7 @@ struct PizzaCarousel: View {
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.viewAligned)
             .scrollPosition(id: $selection)
+            .animation(.bouncy(duration: 0.25), value: selection)
             .scrollClipDisabled()
             .coordinateSpace(name: "pizzaCarousel")
         }
@@ -78,6 +75,50 @@ struct PizzaCarousel: View {
     }
 }
 
+// MARK: - Image view setup
+extension PizzaCarousel {
+    @ViewBuilder
+    private func imageView(for source: ImageSource) -> some View {
+        switch source {
+        case .local(let image):
+            image
+                .resizable()
+                .scaledToFit()
+
+        case .url(let url):
+            AsyncImage(
+                url: url,
+                transaction: Transaction(animation: .easeInOut(duration: 0.25))
+            ) { phase in
+                switch phase {
+                case .empty:
+                    Ellipse()
+                        .fill(.secondary.opacity(0.5))
+                        .shimmering()
+                        .transition(.opacity)
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .transition(.opacity)
+
+                case .failure:
+                    Ellipse()
+                        .fill(.red.opacity(0.5))
+                        .overlay {
+                            Image(systemName: "exclamationmark.octagon")
+                                .foregroundStyle(.red.opacity(0.5))
+                                .font(.system(size: 40))
+                        }
+                @unknown default:
+                    EmptyView()
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Data Models
 extension PizzaCarousel {
     enum Size: Double, CaseIterable, Identifiable {
         var id: Double { self.rawValue }
@@ -99,6 +140,14 @@ extension PizzaCarousel {
     }
 }
 
+extension PizzaCarousel {
+    enum ImageSource {
+        case local(Image)
+        case url(URL)
+    }
+}
+
+// MARK: - Preview
 private struct PizzaCarouselPreview: View {
     @State private var selection: Int? = 0
     @State private var selectedSize: PizzaCarousel.Size = .medium
@@ -115,9 +164,9 @@ private struct PizzaCarouselPreview: View {
             
             PizzaCarousel(
                 images: [
-                    Image(.pizzaClassic),
-                    Image(.pizzaPink),
-                    Image(.pizzaGreen)
+                    .local(Image(.pizzaClassic)),
+                    .local(Image(.pizzaPink)),
+                    .local(Image(.pizzaGreen))
                 ],
                 selection: $selection,
                 size: selectedSize

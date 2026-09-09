@@ -6,5 +6,21 @@
 //
 
 protocol DetailsRepositoryProtocol {
-    func fetchData() async throws -> [Pizza]
+    var pizzas: [Pizza] { get }
+    
+    func fetchData() async throws
+}
+
+final class DetailsRepository: DetailsRepositoryProtocol {
+    private let network: NetworkClient
+
+    private(set) var pizzas: [Pizza] = []
+    
+    func fetchData() async throws {
+        pizzas = try await network.request(OSA.Pizzas()).pizzas
+    }
+    
+    init(network: NetworkClient) {
+        self.network = network
+    }
 }

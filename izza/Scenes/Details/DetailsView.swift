@@ -8,18 +8,9 @@
 import SwiftUI
 
 struct DetailsView: View {
-    @State private var selectedPizza: Int? = 0
-    @State private var selectedSize = "M"
-    @State private var quantity = 1
-    @State private var isFavorite = false
-    @State private var isPizzaZoomed = false
+    @State private var viewModel: DetailsViewModel
     
-    private let pizzaImages = [
-        Image(.pizzaClassic),
-        Image(.pizzaPink),
-        Image(.pizzaGreen)
-    ]
-    private let sizes = ["S", "M", "L"]
+    @State private var isPizzaZoomed = false
     
     private let designScreenWidth = 375.0
     private let designEllipseDiameter = 607.0
@@ -30,21 +21,21 @@ struct DetailsView: View {
 
     private func sizePicker() -> some View {
         HStack(alignment: .bottom, spacing: 26) {
-            ForEach(sizes, id: \.self) { size in
+            ForEach(PizzaSize.allCases, id: \.self) { size in
                 VStack(spacing: -15) {
-                    if size == "M" {
+                    if size == .medium {
                         Image(.banana)
                     }
 
                     RoundButton(
-                        text: size,
-                        isSelected: selectedSize == size
+                        text: size.rawValue,
+                        isSelected: viewModel.selectedSize == size
                     ) {
-                        selectedSize = size
+                        viewModel.selectedSize = size
                     }
                     .buttonStyle(StaticButtonStyle())
                 }
-                .offset(y: size == "M" ? 0 : -16)
+                .offset(y: size == .medium ? 0 : -16)
             }
         }
     }
@@ -53,17 +44,30 @@ struct DetailsView: View {
         VStack(spacing: 0) {
             NavigationHeader(
                 category: "Pizzas",
-                title: "Pepperoni Blast",
-                trailingSystemName: isFavorite ? "heart.fill" : "heart",
-                trailingForegroundColor: isFavorite ? .red : .active,
+                title: viewModel.selectedPizza.name,
+                trailingSystemName: viewModel.isFavorite ? "heart.fill" : "heart",
+                trailingForegroundColor: viewModel.isFavorite ? .red : .active,
                 onBack: {},
-                onTrailingButtonTap: { isFavorite.toggle() }
+                onTrailingButtonTap: { viewModel.isFavorite.toggle() }
             )
             
             PizzaCarousel(
-                images: pizzaImages,
-                selection: $selectedPizza,
-                size: .fromString(selectedSize)
+                images: viewModel.pizzaImageURLs.map { .url($0) },
+                selection:
+                    Binding(
+                        get: { viewModel.selectedPizzaIndex },
+                        set: { newValue in
+                            guard let newValue,
+                                  newValue != viewModel.selectedPizzaIndex else {
+                                return
+                            }
+                            
+                            withAnimation(.snappy) {
+                                viewModel.selectedPizzaIndex = newValue
+                            }
+                        }
+                    ),
+                size: PizzaCarousel.Size(viewModel.selectedSize)
             )
             .overlay {
                 Image(.zoom)
@@ -101,7 +105,7 @@ struct DetailsView: View {
     }
 
     private func descriptionSection() -> some View {
-        Text("The combination of perfectly melted mozzarella cheese, tangy tomato sauce, and a crispy yet chewy crust creates a harmonious balance that leaves you wanting more.")
+        Text(viewModel.selectedPizza.description)
             .font(.figtree(size: 14))
             .lineSpacing(8)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -110,11 +114,11 @@ struct DetailsView: View {
 
     private func orderBar() -> some View {
         HStack {
-            StepperView(value: $quantity)
+            StepperView(value: $viewModel.quantity)
             
             Spacer()
 
-            Text("$17.99")
+            Text("$\(viewModel.price, specifier: "%.2f")")
                 .font(.figtree(size: 24, weight: .extraBold))
             
             Spacer()
@@ -153,6 +157,10 @@ struct DetailsView: View {
         .scaleEffect(isPizzaZoomed ? 4.0 : 1, anchor: .init(x: 0.5, y: 0.25))
         .entranceScope()
     }
+    
+    init(viewModel: DetailsViewModel) {
+        self.viewModel = viewModel
+    }
 }
 
 // MARK: - Utilities
@@ -163,19 +171,19 @@ private struct StaticButtonStyle: ButtonStyle {
 }
 
 extension PizzaCarousel.Size {
-    static func fromString(_ string: String) -> Self {
-        switch string {
-        case "S":
-            return .small
-        case "L":
-            return .large
-        default:
-            return .medium
+    init(_ pizzaSize: PizzaSize) {
+        switch pizzaSize {
+        case .small:
+            self = .small
+        case .medium:
+            self = .medium
+        case .large:
+            self = .large
         }
     }
 }
 
 // MARK: - Preview
 #Preview {
-    DetailsView()
+    DetailsView(viewModel: DetailsViewModel(repo: MockDetailsRepository()))
 }
