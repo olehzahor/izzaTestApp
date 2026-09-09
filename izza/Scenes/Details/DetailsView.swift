@@ -77,8 +77,10 @@ struct DetailsView: View {
             }
             .padding(.top, 54)
             .padding(.bottom, 41)
+            .appear(animation: .linear)
             
             sizePicker()
+                .appear(from: .bottom)
         }
         .background {
             GeometryReader { proxy in
@@ -129,19 +131,27 @@ struct DetailsView: View {
         .padding(.vertical, 12)
         .frame(height: 48)
     }
+    
+    @State var isPresented: Bool = false
 
     // MARK: - Body
     var body: some View {
         VStack(spacing: 0) {
             heroSection()
+            
             descriptionSection()
                 .padding(.top, 21)
+                .appear(from: .bottom)
+
             Spacer(minLength: 16)
+
             orderBar()
+                .appear(animation: .linear)
         }
         .padding(.bottom, 22)
         .background(Color.white)
         .scaleEffect(isPizzaZoomed ? 4.0 : 1, anchor: .init(x: 0.5, y: 0.25))
+        .entranceScope()
     }
 }
 

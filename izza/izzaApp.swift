@@ -28,9 +28,9 @@ struct MainContainer: View {
                 )
                 .transition(splashTransition)
                 .zIndex(1)
+            } else {
+                DetailsView()
             }
-            
-            DetailsView()
         }
         .preferredColorScheme(.light)
         .task {
@@ -46,9 +46,8 @@ struct MainContainer: View {
 struct izzaApp: App {
     var body: some Scene {
         WindowGroup {
-            DetailsView()
+            MainContainer()
                 .preferredColorScheme(.light)
-            //MainContainer()
         }
     }
 }
