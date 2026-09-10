@@ -4,7 +4,7 @@ Izza is a SwiftUI implementation of an interactive pizza catalogue created for t
 
 ## Demo
 
-![Izza app demo](Demo/izza-demo.gif)
+![Izza app demo](Demo/izza-demo-v2.gif)
 
 ## Features
 
