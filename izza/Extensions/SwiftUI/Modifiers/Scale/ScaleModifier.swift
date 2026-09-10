@@ -52,7 +52,7 @@ private enum ScaleAmount {
 
 private struct ScaleModifier: ViewModifier {
     let amount: ScaleAmount
-    let isActive: Bool
+    @Binding var isActive: Bool
 
     @State private var metrics = ScaleMetrics()
 
@@ -95,6 +95,18 @@ private struct ScaleModifier: ViewModifier {
                 }
                 .ignoresSafeArea()
         }
+        .overlay {
+            if isActive {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation(.bouncy(duration: 0.35)) {
+                            isActive = false
+                        }
+                    }
+                    .ignoresSafeArea()
+            }
+        }
     }
 }
 
@@ -108,14 +120,14 @@ extension View {
         }
     }
 
-    func scale(_ factor: CGFloat, isActive: Bool = true) -> some View {
+    func scale(_ factor: CGFloat, isActive: Binding<Bool>) -> some View {
         modifier(ScaleModifier(amount: .factor(factor), isActive: isActive))
     }
 
     func scale(
         screenHeight fraction: CGFloat,
         targetHeight: CGFloat,
-        isActive: Bool = true
+        isActive: Binding<Bool>
     ) -> some View {
         modifier(ScaleModifier(
             amount: .screenHeight(fraction, targetHeight: targetHeight),

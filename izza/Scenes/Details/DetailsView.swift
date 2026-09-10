@@ -159,7 +159,7 @@ struct DetailsView: View {
         .background(Color.white)
         .scale(screenHeight: 1.2,
                targetHeight: pizzaHeight,
-               isActive: isPizzaZoomed)
+               isActive: $isPizzaZoomed)
         .entranceScope()
     }
     
