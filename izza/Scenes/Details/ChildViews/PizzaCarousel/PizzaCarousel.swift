@@ -12,6 +12,7 @@ struct PizzaCarousel: View {
     @Binding var selection: Int?
     
     var size: Size
+    var onPizzaHeightChange: (CGFloat) -> Void = { _ in }
     
     private let designScreenWidth = 375.0
     private let designCarouselItemSize = Size.medium.rawValue
@@ -69,6 +70,11 @@ struct PizzaCarousel: View {
             .animation(.bouncy(duration: 0.25), value: selection)
             .scrollClipDisabled()
             .coordinateSpace(name: "pizzaCarousel")
+        }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            size.rawValue * proxy.size.width / designScreenWidth
+        } action: { newValue in
+            onPizzaHeightChange(newValue)
         }
         .animation(.bouncy(duration: 0.15, extraBounce: 0.2), value: size)
         .aspectRatio(designScreenWidth / Size.medium.rawValue, contentMode: .fit)

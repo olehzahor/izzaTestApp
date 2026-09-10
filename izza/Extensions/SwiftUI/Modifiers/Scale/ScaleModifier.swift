@@ -21,13 +21,13 @@ private struct ScaleTargetBoundsKey: PreferenceKey {
 private nonisolated struct ScaleMetrics: Equatable, Sendable {
     var sceneHeight: CGFloat = .zero
     var sceneGlobalMinY: CGFloat = .zero
-    var destinationGlobalY: CGFloat = .zero
+    var screenFrame: CGRect = .zero
     var targetMidY: CGFloat = .zero
 
     func anchor(for factor: CGFloat) -> UnitPoint {
         guard sceneHeight > 0, factor != 1 else { return .center }
 
-        let destinationY = destinationGlobalY - sceneGlobalMinY
+        let destinationY = screenFrame.midY - sceneGlobalMinY
         let anchorY = (factor * targetMidY - destinationY)
             / ((factor - 1) * sceneHeight)
 
@@ -35,13 +35,30 @@ private nonisolated struct ScaleMetrics: Equatable, Sendable {
     }
 }
 
+private enum ScaleAmount {
+    case factor(CGFloat)
+    case screenHeight(CGFloat, targetHeight: CGFloat)
+
+    func factor(screenHeight: CGFloat) -> CGFloat {
+        switch self {
+        case .factor(let factor):
+            return factor
+        case .screenHeight(let fraction, let targetHeight):
+            guard screenHeight > 0, targetHeight > 0, fraction > 0 else { return 1 }
+            return screenHeight * fraction / targetHeight
+        }
+    }
+}
+
 private struct ScaleModifier: ViewModifier {
-    let factor: CGFloat
+    let amount: ScaleAmount
     let isActive: Bool
 
     @State private var metrics = ScaleMetrics()
 
     func body(content: Content) -> some View {
+        let factor = amount.factor(screenHeight: metrics.screenFrame.height)
+
         ZStack {
             content
                 .onGeometryChange(for: CGFloat.self) { proxy in
@@ -71,10 +88,10 @@ private struct ScaleModifier: ViewModifier {
         }
         .background {
             Color.clear
-                .onGeometryChange(for: CGFloat.self) { proxy in
-                    proxy.frame(in: .global).midY
+                .onGeometryChange(for: CGRect.self) { proxy in
+                    proxy.frame(in: .global)
                 } action: { newValue in
-                    metrics.destinationGlobalY = newValue
+                    metrics.screenFrame = newValue
                 }
                 .ignoresSafeArea()
         }
@@ -92,6 +109,17 @@ extension View {
     }
 
     func scale(_ factor: CGFloat, isActive: Bool = true) -> some View {
-        modifier(ScaleModifier(factor: factor, isActive: isActive))
+        modifier(ScaleModifier(amount: .factor(factor), isActive: isActive))
+    }
+
+    func scale(
+        screenHeight fraction: CGFloat,
+        targetHeight: CGFloat,
+        isActive: Bool = true
+    ) -> some View {
+        modifier(ScaleModifier(
+            amount: .screenHeight(fraction, targetHeight: targetHeight),
+            isActive: isActive
+        ))
     }
 }

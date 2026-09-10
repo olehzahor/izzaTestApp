@@ -11,6 +11,7 @@ struct DetailsView: View {
     @State private var viewModel: DetailsViewModel
     
     @State private var isPizzaZoomed = false
+    @State private var pizzaHeight: CGFloat = .zero
     
     private let designScreenWidth = 375.0
     private let designEllipseDiameter = 607.0
@@ -67,7 +68,8 @@ struct DetailsView: View {
                             }
                         }
                     ),
-                size: PizzaCarousel.Size(viewModel.selectedSize)
+                size: PizzaCarousel.Size(viewModel.selectedSize),
+                onPizzaHeightChange: { pizzaHeight = $0 }
             )
             .scaleTarget()
             .overlay {
@@ -141,28 +143,24 @@ struct DetailsView: View {
 
     // MARK: - Body
     var body: some View {
-        sceneContent
-            .scale(4, isActive: isPizzaZoomed)
-            .entranceScope()
-    }
-
-    private var sceneContent: some View {
         VStack(spacing: 0) {
             heroSection()
             
             descriptionSection()
                 .padding(.top, 21)
                 .appear(from: .bottom)
-
+            
             Spacer(minLength: 16)
-
+            
             orderBar()
                 .appear(animation: .linear)
         }
         .padding(.bottom, 22)
-
         .background(Color.white)
-
+        .scale(screenHeight: 1.2,
+               targetHeight: pizzaHeight,
+               isActive: isPizzaZoomed)
+        .entranceScope()
     }
     
     init(viewModel: DetailsViewModel) {
