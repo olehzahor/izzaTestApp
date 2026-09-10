@@ -15,34 +15,19 @@ struct DetailsView: View {
     private let designScreenWidth = 375.0
     private let designEllipseDiameter = 607.0
     
+    @State private var targetGlobalY: CGFloat = .zero
     @State private var sceneHeight: CGFloat = .zero
     @State private var pizzaMidY: CGFloat = .zero
-    @State private var pizzaMidYGloabal: CGFloat = .zero
+    @State private var sceneGlobalMinY: CGFloat = .zero
 
-    @State private var screenCenterY: CGFloat = .zero
-    @State private var safeAreaTop: CGFloat = .zero
-    @State private var safeAreaBottom: CGFloat = .zero
+    private let zoomScale: CGFloat = 2.96
 
     private var scaleAnchor: CGFloat {
         guard sceneHeight > 0 else { return 0.5 }
-        
-        print("sceneHeight: \(sceneHeight)")
-        print("pizzaMidY: \(pizzaMidY)")
-        print("pizzaMidYGloabal: \(pizzaMidYGloabal)")
-        print("screenCenterY: \(screenCenterY)")
-        print("safeAreaTop: \(safeAreaTop)")
-        print("safeAreaBottom: \(safeAreaBottom)")
 
-        let zoomScale: CGFloat = 2.96
-        let screenHeight: CGFloat = 874
-
-        let screenCenter = screenHeight / 2
-        let pizzaTravel = screenCenter - pizzaMidYGloabal
-        let anchorToPizza = pizzaTravel / (zoomScale - 1)
-
-        let anchorY = pizzaMidY - anchorToPizza
-
-        return anchorY / sceneHeight
+        let targetY = targetGlobalY - sceneGlobalMinY
+        return (zoomScale * pizzaMidY - targetY)
+            / ((zoomScale - 1) * sceneHeight)
     }
 
     private let buttonSize = 48.0
@@ -82,7 +67,7 @@ struct DetailsView: View {
             )
             
             PizzaCarousel(
-                images: [.local(.init(.pizzaPink))],// viewModel.pizzaImageURLs.map { .url($0) },
+                images: viewModel.pizzaImageURLs.map { .url($0) },
                 selection:
                     Binding(
                         get: { viewModel.selectedPizzaIndex },
@@ -102,17 +87,9 @@ struct DetailsView: View {
             .onGeometryChange(for: CGFloat.self, of: { proxy in
                 proxy.frame(in: .named("details")).midY
             }, action: { newValue in
-                guard !isPizzaZoomed else { return }
-
                 self.pizzaMidY = newValue
             })
-            .onGeometryChange(for: CGFloat.self, of: { proxy in
-                proxy.frame(in: .global).midY
-            }, action: { newValue in
-                guard !isPizzaZoomed else { return }
 
-                self.pizzaMidYGloabal = newValue
-            })
 
             //.scaleTarget()
             .overlay {
@@ -186,6 +163,28 @@ struct DetailsView: View {
 
     // MARK: - Body
     var body: some View {
+        ZStack {
+            sceneContent
+                .scaleEffect(isPizzaZoomed ? zoomScale : 1, anchor: .init(x: 0.5, y: scaleAnchor))
+        }
+        .onGeometryChange(for: CGFloat.self, of: { proxy in
+            proxy.frame(in: .global).minY
+        }, action: { newValue in
+            sceneGlobalMinY = newValue
+        })
+        .background {
+            Color.clear
+                .onGeometryChange(for: CGFloat.self, of: { proxy in
+                    proxy.frame(in: .global).midY
+                }, action: { newValue in
+                    targetGlobalY = newValue
+                })
+                .ignoresSafeArea()
+        }
+        .entranceScope()
+    }
+
+    private var sceneContent: some View {
         VStack(spacing: 0) {
             heroSection()
             
@@ -199,41 +198,14 @@ struct DetailsView: View {
                 .appear(animation: .linear)
         }
         .padding(.bottom, 22)
+
         .background(Color.white)
-        .coordinateSpace(name: "details")
         .onGeometryChange(for: CGFloat.self, of: { proxy in
-            proxy.frame(in: .named("details")).midY
+            proxy.size.height
         }, action: { newValue in
-            guard !isPizzaZoomed else { return }
-
-            self.screenCenterY = newValue
-        })
-        .onGeometryChange(for: CGFloat.self, of: { proxy in
-            proxy.frame(in: .global).height
-        }, action: { newValue in
-            guard !isPizzaZoomed else { return }
-
-            self.sceneHeight = newValue
-        })
-        .onGeometryChange(for: CGFloat.self, of: { proxy in
-            proxy.safeAreaInsets.top
-        }, action: { newValue in
-            guard !isPizzaZoomed else { return }
-
-            self.safeAreaTop = newValue
-        })
-        .onGeometryChange(for: CGFloat.self, of: { proxy in
-            proxy.safeAreaInsets.bottom
-        }, action: { newValue in
-            guard !isPizzaZoomed else { return }
-            self.safeAreaBottom = newValue
+            sceneHeight = newValue
         })
         .coordinateSpace(name: "details")
-
-
-        .scaleEffect(isPizzaZoomed ? 2.96 : 1, anchor: .init(x: 0.5, y: scaleAnchor))
-        //.scale(isPizzaZoomed ? 3 : 1)
-        .entranceScope()
     }
     
     init(viewModel: DetailsViewModel) {
