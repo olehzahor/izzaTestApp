@@ -6,8 +6,6 @@ Izza is a SwiftUI implementation of an interactive pizza catalogue created for t
 
 ![Izza app demo](Demo/izza-demo.gif)
 
-[Open the higher-resolution MP4](Demo/izza-demo.mp4) · 22 seconds, 2.3 MB
-
 ## Features
 
 - Eight-frame animated splash screen synchronized with the initial API request
