@@ -71,7 +71,6 @@ struct izzaApp: App {
 }
 
 // MARK: - Preview
-
 #Preview {
     MainContainer(detailsRepo: MockDetailsRepository())
 }

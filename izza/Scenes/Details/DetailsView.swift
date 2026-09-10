@@ -154,7 +154,7 @@ struct DetailsView: View {
         }
         .padding(.bottom, 22)
         .background(Color.white)
-        .scaleEffect(isPizzaZoomed ? 4.0 : 1, anchor: .init(x: 0.5, y: 0.25))
+        .scaleEffect(isPizzaZoomed ? 4.0 : 1, anchor: .init(x: 0.5, y: 0.24))
         .entranceScope()
     }
     
