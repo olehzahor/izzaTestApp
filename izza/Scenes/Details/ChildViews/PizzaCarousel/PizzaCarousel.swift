@@ -32,8 +32,6 @@ struct PizzaCarousel: View {
                 LazyHStack(spacing: itemSpacing) {
                     ForEach(images.indices, id: \.self) { index in
                         imageView(for: images[index])
-                            .border(.cyan)
-
                             .frame(width: itemDiameter, height: itemDiameter)
                             .frame(width: itemDiameter)
                             .visualEffect { content, geometry in

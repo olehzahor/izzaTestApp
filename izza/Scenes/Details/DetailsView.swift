@@ -15,21 +15,6 @@ struct DetailsView: View {
     private let designScreenWidth = 375.0
     private let designEllipseDiameter = 607.0
     
-    @State private var targetGlobalY: CGFloat = .zero
-    @State private var sceneHeight: CGFloat = .zero
-    @State private var pizzaMidY: CGFloat = .zero
-    @State private var sceneGlobalMinY: CGFloat = .zero
-
-    private let zoomScale: CGFloat = 2.96
-
-    private var scaleAnchor: CGFloat {
-        guard sceneHeight > 0 else { return 0.5 }
-
-        let targetY = targetGlobalY - sceneGlobalMinY
-        return (zoomScale * pizzaMidY - targetY)
-            / ((zoomScale - 1) * sceneHeight)
-    }
-
     private let buttonSize = 48.0
 
     @State private var isPizzaExpanded = false
@@ -84,14 +69,7 @@ struct DetailsView: View {
                     ),
                 size: PizzaCarousel.Size(viewModel.selectedSize)
             )
-            .onGeometryChange(for: CGFloat.self, of: { proxy in
-                proxy.frame(in: .named("details")).midY
-            }, action: { newValue in
-                self.pizzaMidY = newValue
-            })
-
-
-            //.scaleTarget()
+            .scaleTarget()
             .overlay {
                 Image(.zoom)
                     .opacity(isPizzaZoomed ? 0.01 : 1)
@@ -163,25 +141,9 @@ struct DetailsView: View {
 
     // MARK: - Body
     var body: some View {
-        ZStack {
-            sceneContent
-                .scaleEffect(isPizzaZoomed ? zoomScale : 1, anchor: .init(x: 0.5, y: scaleAnchor))
-        }
-        .onGeometryChange(for: CGFloat.self, of: { proxy in
-            proxy.frame(in: .global).minY
-        }, action: { newValue in
-            sceneGlobalMinY = newValue
-        })
-        .background {
-            Color.clear
-                .onGeometryChange(for: CGFloat.self, of: { proxy in
-                    proxy.frame(in: .global).midY
-                }, action: { newValue in
-                    targetGlobalY = newValue
-                })
-                .ignoresSafeArea()
-        }
-        .entranceScope()
+        sceneContent
+            .scale(4, isActive: isPizzaZoomed)
+            .entranceScope()
     }
 
     private var sceneContent: some View {
@@ -200,12 +162,7 @@ struct DetailsView: View {
         .padding(.bottom, 22)
 
         .background(Color.white)
-        .onGeometryChange(for: CGFloat.self, of: { proxy in
-            proxy.size.height
-        }, action: { newValue in
-            sceneHeight = newValue
-        })
-        .coordinateSpace(name: "details")
+
     }
     
     init(viewModel: DetailsViewModel) {
